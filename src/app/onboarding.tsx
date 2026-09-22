@@ -1,0 +1,350 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import Animated, {
+  Easing,
+  Extrapolation,
+  FadeIn,
+  FadeInDown,
+  interpolate,
+  SharedValue,
+  useAnimatedRef,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Circle, Path } from 'react-native-svg';
+import { Coin } from '../components/Coin';
+import { Img } from '../components/ui';
+import { COINS } from '../config/coins';
+import { useProducts } from '../data/catalog';
+import { success, tap } from '../lib/haptics';
+import { useApp } from '../store/app';
+import { fonts } from '../theme';
+
+const BG = '#F1DCC3';
+const ORANGE = '#B8662F';
+
+const SLIDES = [
+  {
+    title: 'ROSIER FOODS',
+    sub: 'Reviving the traditions of Bharat.\nPure food, made the old way.',
+  },
+  {
+    title: 'THE BILONA WAY',
+    sub: 'Our A2 ghee starts as curd, not cream.\nSlow churned by hand, never rushed.',
+  },
+  {
+    title: 'ROSIER COINS',
+    sub: 'Every order earns you coins.\nSwap them for real discounts.',
+  },
+];
+
+/* Decorative wheat sprig that sways in the corner */
+function Sprig() {
+  const r = useSharedValue(0);
+  useEffect(() => {
+    r.value = withRepeat(withTiming(1, { duration: 2600, easing: Easing.inOut(Easing.sin) }), -1, true);
+  }, []);
+  const a = useAnimatedStyle(() => ({ transform: [{ rotate: `${interpolate(r.value, [0, 1], [-6, 6])}deg` }] }));
+  return (
+    <Animated.View style={[{ position: 'absolute', top: -10, right: -20, width: 150, height: 220 }, a]}>
+      <Svg width={150} height={220} viewBox="0 0 150 220">
+        <Path d="M120 0 C 110 60, 95 120, 70 220" stroke="#C98B55" strokeWidth={3} fill="none" />
+        {[0, 1, 2, 3, 4, 5].map((i) => {
+          const y = 20 + i * 30;
+          const x = 118 - i * 7;
+          return (
+            <React.Fragment key={i}>
+              <Path d={`M${x} ${y} q -26 -4 -34 -26 q 24 2 34 26z`} fill="#D9A06A" opacity={0.85} />
+              <Path d={`M${x} ${y} q 24 -8 28 -32 q -22 6 -28 32z`} fill="#C98B55" opacity={0.85} />
+            </React.Fragment>
+          );
+        })}
+      </Svg>
+    </Animated.View>
+  );
+}
+
+/* A floating product "polaroid" */
+function Floater({ uri, x, y, size, rot, delay, scroll, width, depth }: { uri: string; x: number; y: number; size: number; rot: number; delay: number; scroll: SharedValue<number>; width: number; depth: number }) {
+  const f = useSharedValue(0);
+  const enter = useSharedValue(0);
+  useEffect(() => {
+    enter.value = withDelay(delay, withSpring(1, { damping: 12, stiffness: 90 }));
+    f.value = withDelay(delay, withRepeat(withTiming(1, { duration: 2000 + delay, easing: Easing.inOut(Easing.sin) }), -1, true));
+  }, []);
+  const a = useAnimatedStyle(() => ({
+    opacity: enter.value,
+    transform: [
+      { translateX: -scroll.value * depth },
+      { translateY: interpolate(f.value, [0, 1], [0, -10]) + (1 - enter.value) * 60 },
+      { rotate: `${rot + interpolate(f.value, [0, 1], [-2, 2])}deg` },
+      { scale: 0.6 + enter.value * 0.4 },
+    ],
+  }));
+  return (
+    <Animated.View
+      style={[
+        {
+          position: 'absolute',
+          left: x * width,
+          top: y,
+          width: size,
+          height: size,
+          backgroundColor: '#fff',
+          borderRadius: 18,
+          padding: 6,
+          shadowColor: '#5A3520',
+          shadowOpacity: 0.2,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 8 },
+          elevation: 8,
+        },
+        a,
+      ]}
+    >
+      <Img source={uri} size={size} style={{ flex: 1, borderRadius: 12 }} contentFit="cover" />
+    </Animated.View>
+  );
+}
+
+/* Slide 2: rotating churn rings around the ghee jar */
+function Churn({ uri, size }: { uri: string; size: number }) {
+  const r = useSharedValue(0);
+  useEffect(() => {
+    r.value = withRepeat(withTiming(1, { duration: 6000, easing: Easing.linear }), -1);
+  }, []);
+  const ring1 = useAnimatedStyle(() => ({ transform: [{ rotate: `${r.value * 360}deg` }] }));
+  const ring2 = useAnimatedStyle(() => ({ transform: [{ rotate: `${-r.value * 360}deg` }] }));
+  return (
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      <Animated.View style={[{ position: 'absolute' }, ring1]}>
+        <Svg width={size} height={size}>
+          <Circle cx={size / 2} cy={size / 2} r={size / 2 - 4} stroke="#C98B55" strokeWidth={2} strokeDasharray="10 14" fill="none" />
+        </Svg>
+      </Animated.View>
+      <Animated.View style={[{ position: 'absolute' }, ring2]}>
+        <Svg width={size} height={size}>
+          <Circle cx={size / 2} cy={size / 2} r={size / 2 - 26} stroke="#B8662F" strokeWidth={1.5} strokeDasharray="4 10" fill="none" />
+        </Svg>
+      </Animated.View>
+      <View style={{ width: size * 0.62, height: size * 0.62, borderRadius: size, backgroundColor: '#fff', padding: 10, overflow: 'hidden' }}>
+        <Img source={uri} size={size} style={{ flex: 1 }} contentFit="contain" />
+      </View>
+    </View>
+  );
+}
+
+function Steps() {
+  const steps = [
+    ['water-outline', 'Gir cow milk'],
+    ['beaker-outline', 'Set into curd'],
+    ['sync-outline', 'Bilona churned'],
+    ['flame-outline', 'Slow cooked'],
+  ] as const;
+  return (
+    <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, flexWrap: 'wrap', marginTop: 18 }}>
+      {steps.map(([icon, label], i) => (
+        <Animated.View key={label} entering={FadeInDown.delay(250 + i * 140).springify()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.6)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5 }}>
+          <Ionicons name={icon} size={13} color={ORANGE} />
+          <Text style={{ fontFamily: fonts.sansMedium, fontSize: 11, color: '#5A3A1E' }}>{label}</Text>
+          {i < steps.length - 1 && <Ionicons name="chevron-forward" size={11} color="#C98B55" />}
+        </Animated.View>
+      ))}
+    </View>
+  );
+}
+
+function CoinRain({ width }: { width: number }) {
+  return (
+    <View style={{ width, height: 300, alignItems: 'center', justifyContent: 'center' }}>
+      {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+        <FallingCoin key={i} i={i} width={width} />
+      ))}
+      <Coin size={150} spin shine />
+    </View>
+  );
+}
+
+function FallingCoin({ i, width }: { i: number; width: number }) {
+  const y = useSharedValue(0);
+  useEffect(() => {
+    y.value = withDelay(i * 380, withRepeat(withSequence(withTiming(1, { duration: 2400, easing: Easing.in(Easing.quad) }), withTiming(0, { duration: 0 })), -1));
+  }, []);
+  const x = ((i * 37) % 100) / 100;
+  const a = useAnimatedStyle(() => ({
+    opacity: interpolate(y.value, [0, 0.1, 0.8, 1], [0, 1, 1, 0]),
+    transform: [{ translateY: interpolate(y.value, [0, 1], [-40, 320]) }, { rotate: `${y.value * 540}deg` }],
+  }));
+  return (
+    <Animated.View style={[{ position: 'absolute', top: 0, left: 20 + x * (width - 80) }, a]}>
+      <Coin size={22 + (i % 3) * 8} />
+    </Animated.View>
+  );
+}
+
+export default function Onboarding() {
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const products = useProducts();
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const x = useSharedValue(0);
+  const [page, setPage] = useState(0);
+  const [name, setName] = useState(useApp.getState().name === 'Ankur' ? '' : useApp.getState().name);
+  const setOnboarded = useApp((s) => s.setOnboarded);
+  const setProfile = useApp((s) => s.setProfile);
+  const input = useRef<TextInput>(null);
+
+  const img = (h: string, i = 0) => products.find((p) => p.handle === h)?.images[i] ?? products[0].images[0];
+  const collage = [
+    { uri: img('high-protein-oats-kulfi-masti'), x: 0.06, y: 40, size: 100, rot: -10, depth: 0.25 },
+    { uri: img('mango-pickle'), x: 0.4, y: 0, size: 88, rot: 6, depth: 0.4 },
+    { uri: img('a2-desi-cow-ghee-hand-churned-from-curd'), x: 0.3, y: 110, size: 150, rot: -3, depth: 0.15 },
+    { uri: img('wood-pressed-black-mustard-oil'), x: 0.7, y: 60, size: 92, rot: 10, depth: 0.35 },
+    { uri: img('khapli-emmer-wheat-atta-stoneground-high-fiber-for-gut-health'), x: 0.02, y: 180, size: 110, rot: 8, depth: 0.3 },
+    { uri: img('wild-flower-honey'), x: 0.68, y: 190, size: 104, rot: -8, depth: 0.45 },
+    { uri: img('nut-butter-dark-chocolate'), x: 0.42, y: 290, size: 78, rot: 12, depth: 0.5 },
+  ];
+
+  const onScroll = useAnimatedScrollHandler((e) => {
+    x.value = e.contentOffset.x;
+  });
+
+  const finish = () => {
+    success();
+    if (name.trim()) setProfile({ name: name.trim() });
+    setOnboarded(true);
+    router.replace('/home');
+  };
+
+  const next = () => {
+    tap();
+    if (page < SLIDES.length - 1) {
+      scrollRef.current?.scrollTo({ x: (page + 1) * width, animated: true });
+      setPage(page + 1);
+    } else finish();
+  };
+
+  const artH = height * 0.52;
+
+  return (
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: BG }}>
+      <Sprig />
+      <Animated.ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        onMomentumScrollEnd={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / width))}
+        keyboardShouldPersistTaps="handled"
+      >
+        {SLIDES.map((s, i) => (
+          <View key={s.title} style={{ width, paddingTop: insets.top + 50 }}>
+            <View style={{ height: artH, alignItems: 'center', justifyContent: 'center' }}>
+              {i === 0 && (
+                <View style={{ width, height: artH }}>
+                  {collage.map((c, k) => (
+                    <Floater key={k} {...c} delay={120 * k} scroll={x} width={width} />
+                  ))}
+                </View>
+              )}
+              {i === 1 && <Churn uri={img('a2-desi-cow-ghee-hand-churned-from-curd')} size={Math.min(width * 0.82, artH)} />}
+              {i === 2 && <CoinRain width={width} />}
+            </View>
+            <SlideText index={i} x={x} width={width} title={s.title} sub={s.sub} />
+            {i === 1 && page === 1 && <Steps />}
+            {i === 2 && (
+              <Animated.View entering={FadeIn.delay(200)} style={{ paddingHorizontal: 28, marginTop: 16 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 16, paddingHorizontal: 14, height: 50, gap: 8 }}>
+                  <Ionicons name="person-outline" size={18} color={ORANGE} />
+                  <TextInput
+                    ref={input}
+                    value={name}
+                    onChangeText={setName}
+                    placeholder="What should we call you?"
+                    placeholderTextColor="#A8927F"
+                    returnKeyType="done"
+                    onSubmitEditing={finish}
+                    style={{ flex: 1, fontFamily: fonts.sans, fontSize: 15, color: '#3E2415' }}
+                  />
+                </View>
+                <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: '#7A6453', marginTop: 8 }}>
+                  🎁 {COINS.welcomeBonus} welcome coins are already in your wallet.
+                </Text>
+              </Animated.View>
+            )}
+          </View>
+        ))}
+      </Animated.ScrollView>
+
+      {/* Footer: dots, skip, next */}
+      <View style={{ position: 'absolute', left: 28, right: 28, bottom: insets.bottom + 24, flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', gap: 6, flex: 1 }}>
+          {SLIDES.map((_, i) => (
+            <PageDot key={i} i={i} x={x} width={width} />
+          ))}
+        </View>
+        {page < SLIDES.length - 1 && (
+          <Pressable onPress={finish} hitSlop={12} style={{ marginRight: 18 }}>
+            <Text style={{ fontFamily: fonts.sansMedium, color: '#8B7B6E', fontSize: 15 }}>Skip</Text>
+          </Pressable>
+        )}
+        <NextButton last={page === SLIDES.length - 1} onPress={next} />
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+function SlideText({ index, x, width, title, sub }: { index: number; x: SharedValue<number>; width: number; title: string; sub: string }) {
+  const a = useAnimatedStyle(() => {
+    const p = (x.value - index * width) / width;
+    return {
+      opacity: interpolate(Math.abs(p), [0, 0.6], [1, 0], Extrapolation.CLAMP),
+      transform: [{ translateX: interpolate(p, [-1, 0, 1], [width * 0.4, 0, -width * 0.4]) }],
+    };
+  });
+  return (
+    <Animated.View style={[{ paddingHorizontal: 28, marginTop: 10 }, a]}>
+      <Text style={{ fontFamily: fonts.sansSemi, fontSize: 34, color: ORANGE, letterSpacing: 0.5 }}>{title}</Text>
+      <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: '#7A6453', marginTop: 4, lineHeight: 22 }}>{sub}</Text>
+    </Animated.View>
+  );
+}
+
+function PageDot({ i, x, width }: { i: number; x: SharedValue<number>; width: number }) {
+  const a = useAnimatedStyle(() => {
+    const d = Math.abs(x.value / width - i);
+    return { width: interpolate(d, [0, 1], [26, 8], Extrapolation.CLAMP), opacity: interpolate(d, [0, 1], [1, 0.4], Extrapolation.CLAMP) };
+  });
+  return <Animated.View style={[{ height: 8, borderRadius: 4, backgroundColor: '#FFFFFF' }, a]} />;
+}
+
+function NextButton({ last, onPress }: { last: boolean; onPress: () => void }) {
+  const w = useSharedValue(56);
+  useEffect(() => {
+    w.value = withSpring(last ? 150 : 56, { damping: 14 });
+  }, [last]);
+  const a = useAnimatedStyle(() => ({ width: w.value }));
+  return (
+    <Pressable onPress={onPress}>
+      <Animated.View style={[{ height: 56, borderRadius: 28, backgroundColor: '#3E2415', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, overflow: 'hidden' }, a]}>
+        {last && (
+          <Animated.Text entering={FadeIn.delay(150)} style={{ color: '#FBE6CF', fontFamily: fonts.sansSemi, fontSize: 15 }} numberOfLines={1}>
+            Get Started
+          </Animated.Text>
+        )}
+        <Ionicons name="arrow-forward" size={22} color="#FBE6CF" />
+      </Animated.View>
+    </Pressable>
+  );
+}

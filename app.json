@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Rosier",
+    "slug": "rosier-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.rosierfoods.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#3E2415",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.rosierfoods.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-image",
+      "expo-web-browser",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FBEBD8",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 260
+        }
+      ]
+    ],
+    "scheme": "rosier",
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
