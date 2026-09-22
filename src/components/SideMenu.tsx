@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '../store/app';
 import { fonts, useTheme } from '../theme';
 import { Avatar } from './Avatar';
+import { RosierLogo, TAGLINE } from './Logo';
 import { PressableScale } from './ui';
 
 const ITEMS: { label: string; icon: ReactNode; go: () => void }[] = [
@@ -68,7 +69,7 @@ export function MenuShell({ children }: { children: ReactNode }) {
           <>
             <Animated.View entering={FadeInLeft.springify().damping(15)} style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 28 }}>
               <Avatar size={64} />
-              <Text style={{ fontFamily: fonts.serif, fontSize: 28, color: t.text }}>Hi {name}!</Text>
+              <Text style={{ fontFamily: fonts.serif, fontSize: 28, color: t.text }}>Hi {name || 'there'}!</Text>
             </Animated.View>
             {ITEMS.map((it, i) => (
               <Animated.View key={it.label} entering={FadeInLeft.delay(40 + i * 45).springify().damping(15)}>
@@ -93,6 +94,10 @@ export function MenuShell({ children }: { children: ReactNode }) {
                 </View>
                 <Text style={{ fontFamily: fonts.serif, fontSize: 21, color: t.text }}>Logout</Text>
               </Pressable>
+            </Animated.View>
+            <Animated.View entering={FadeInLeft.delay(560).springify()} style={{ marginTop: 26 }}>
+              <RosierLogo width={96} color={t.text} />
+              <Text style={{ fontFamily: fonts.serif, fontSize: 13, color: t.textSoft, marginTop: 2 }}>{TAGLINE}</Text>
             </Animated.View>
           </>
         )}

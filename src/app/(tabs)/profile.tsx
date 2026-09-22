@@ -75,9 +75,9 @@ export default function Profile() {
       <Animated.View entering={FadeInDown.springify()} style={{ marginTop: 14 }}>
         <LinearGradient colors={['#4A2C17', '#7A4B25']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 24, padding: 18 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-            <Avatar size={64} />
+            <Avatar size={64} editable />
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: fonts.serif, fontSize: 24, color: '#FFF5E8' }}>{name}</Text>
+              <Text style={{ fontFamily: fonts.serif, fontSize: 24, color: '#FFF5E8' }}>{name || 'Your name'}</Text>
               <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: '#E9D6C0' }}>{phone || email || 'Add your phone & email'}</Text>
             </View>
             <PressableScale onPress={() => router.push('/account')} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' }}>

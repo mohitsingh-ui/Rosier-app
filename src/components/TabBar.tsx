@@ -7,6 +7,7 @@ import { tap } from '../lib/haptics';
 import { useCartCount } from '../store/shop';
 import { fonts, useTheme } from '../theme';
 import { useFly } from './FlyToCart';
+import { RosierLogo } from './Logo';
 
 type Tab = { name: string; label: string; icon: (c: string, s: number) => React.ReactNode };
 
@@ -21,12 +22,7 @@ export const TABS: Tab[] = [
 const BUBBLE = 66;
 
 function RosierMark() {
-  return (
-    <View style={{ alignItems: 'center' }}>
-      <Text style={{ color: '#FBE6CF', fontFamily: fonts.serifBold, fontSize: 12, letterSpacing: 1 }}>ROSIER</Text>
-      <Text style={{ color: '#E9CFA9', fontFamily: fonts.sans, fontSize: 5.5, letterSpacing: 0.8 }}>NATURE'S LOVE</Text>
-    </View>
-  );
+  return <RosierLogo width={50} color="#FBE6CF" />;
 }
 
 export function TabBar({ state, navigation }: any) {

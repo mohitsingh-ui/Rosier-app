@@ -35,7 +35,8 @@ export default function Account() {
       <ScreenHeader title="Account" />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
         <View style={{ alignItems: 'center' }}>
-          <Avatar size={90} />
+          <Avatar size={96} editable />
+          <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: t.textMute, marginTop: 8 }}>Tap to change your photo</Text>
         </View>
         {field('Name', name, setName, { placeholder: 'Your name' }, 0)}
         {field('Phone', phone, setPhone, { placeholder: '+91', keyboardType: 'phone-pad' }, 1)}

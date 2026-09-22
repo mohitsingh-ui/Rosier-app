@@ -21,7 +21,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
+import { Avatar } from '../components/Avatar';
 import { Coin } from '../components/Coin';
+import { RosierLogo } from '../components/Logo';
 import { Img } from '../components/ui';
 import { COINS } from '../config/coins';
 import { useProducts } from '../data/catalog';
@@ -35,7 +37,7 @@ const ORANGE = '#B8662F';
 const SLIDES = [
   {
     title: 'ROSIER FOODS',
-    sub: 'Reviving the traditions of Bharat.\nPure food, made the old way.',
+    sub: 'Reviving the tradition of Bharat.\nPure food, made the old way.',
   },
   {
     title: 'THE BILONA WAY',
@@ -198,7 +200,7 @@ export default function Onboarding() {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const x = useSharedValue(0);
   const [page, setPage] = useState(0);
-  const [name, setName] = useState(useApp.getState().name === 'Ankur' ? '' : useApp.getState().name);
+  const [name, setName] = useState(useApp.getState().name);
   const setOnboarded = useApp((s) => s.setOnboarded);
   const setProfile = useApp((s) => s.setProfile);
   const input = useRef<TextInput>(null);
@@ -265,7 +267,9 @@ export default function Onboarding() {
             {i === 1 && page === 1 && <Steps />}
             {i === 2 && (
               <Animated.View entering={FadeIn.delay(200)} style={{ paddingHorizontal: 28, marginTop: 16 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 16, paddingHorizontal: 14, height: 50, gap: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Avatar size={56} editable />
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 16, paddingHorizontal: 14, height: 50, gap: 8 }}>
                   <Ionicons name="person-outline" size={18} color={ORANGE} />
                   <TextInput
                     ref={input}
@@ -277,6 +281,7 @@ export default function Onboarding() {
                     onSubmitEditing={finish}
                     style={{ flex: 1, fontFamily: fonts.sans, fontSize: 15, color: '#3E2415' }}
                   />
+                </View>
                 </View>
                 <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: '#7A6453', marginTop: 8 }}>
                   🎁 {COINS.welcomeBonus} welcome coins are already in your wallet.
@@ -315,6 +320,11 @@ function SlideText({ index, x, width, title, sub }: { index: number; x: SharedVa
   });
   return (
     <Animated.View style={[{ paddingHorizontal: 28, marginTop: 10 }, a]}>
+      {index === 0 && (
+        <View style={{ marginBottom: 6, marginLeft: -6 }}>
+          <RosierLogo width={110} color="#5A3520" />
+        </View>
+      )}
       <Text style={{ fontFamily: fonts.sansSemi, fontSize: 34, color: ORANGE, letterSpacing: 0.5 }}>{title}</Text>
       <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: '#7A6453', marginTop: 4, lineHeight: 22 }}>{sub}</Text>
     </Animated.View>

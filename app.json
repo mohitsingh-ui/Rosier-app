@@ -35,6 +35,14 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 260
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Rosier uses your photos so you can set a profile picture.",
+          "cameraPermission": "Rosier uses your camera so you can take a profile picture.",
+          "microphonePermission": false
+        }
       ]
     ],
     "scheme": "rosier",

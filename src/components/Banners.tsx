@@ -21,10 +21,10 @@ function Perk({ icon, label }: { icon: keyof typeof MaterialCommunityIcons.glyph
   );
 }
 
-export function CoinsBanner({ width }: { width: number }) {
+export function CoinsBanner({ width, height = 212 }: { width: number; height?: number }) {
   return (
     <PressableScale scaleTo={0.98} onPress={() => router.navigate('/coins')} style={{ width }}>
-      <LinearGradient colors={['#FFF6E6', '#F4DFC0', '#EBCB9B']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={cardBase}>
+      <LinearGradient colors={['#FFF6E6', '#F4DFC0', '#EBCB9B']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[cardBase, { height, justifyContent: 'center' }]}>
         <View style={{ maxWidth: width - 150 }}>
           <Text style={{ fontFamily: fonts.serif, fontSize: 22, color: '#4A2C17', lineHeight: 26 }}>Every Order.{'\n'}More Rewards.</Text>
           <Text style={{ fontFamily: fonts.sans, fontSize: 10, color: '#5A3A1E', marginTop: 6, lineHeight: 14 }}>
@@ -40,7 +40,7 @@ export function CoinsBanner({ width }: { width: number }) {
             <Ionicons name="arrow-forward" size={12} color="#FBE6CF" />
           </View>
         </View>
-        <View style={{ position: 'absolute', right: 14, top: 40 }}>
+        <View style={{ position: 'absolute', right: 14, top: height / 2 - 66 }}>
           <Coin size={112} spin shine />
           <LinearGradient colors={['#8B5A2B', '#4A2C17']} style={{ width: 128, height: 20, borderRadius: 64, marginTop: -8, marginLeft: -8, opacity: 0.9 }} />
         </View>

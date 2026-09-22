@@ -6,6 +6,9 @@ import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'rea
 import Animated, { FadeIn, FadeInDown, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '../../components/Avatar';
+import { LiveBannerSlide, LiveTiles } from '../../components/LiveBanners';
+import { RosierLogo, TAGLINE } from '../../components/Logo';
+import { useBanners } from '../../data/banners';
 import { BenefitsBanner, Carousel, CoinsBanner, ProductBanner } from '../../components/Banners';
 import { CategoryIcon } from '../../components/CategoryIcon';
 import { Coin } from '../../components/Coin';
@@ -49,6 +52,9 @@ export default function Home() {
   const openMenu = useApp((s) => s.setMenuOpen);
   const balance = useCoins((s) => s.balance);
   const [tab, setTab] = useState('rosier');
+  const liveSlides = useBanners((s) => s.slides);
+  const bannerAspect = useBanners((s) => s.aspect);
+  const refreshBanners = useBanners((s) => s.refresh);
 
   const y = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((e) => {
@@ -101,7 +107,7 @@ export default function Home() {
           </PressableScale>
           <View style={{ marginLeft: 12, flex: 1 }}>
             <Text style={{ fontFamily: fonts.serif, fontSize: 22, color: t.text }} numberOfLines={1}>
-              Hi {name}!
+              Hi {name || 'there'}!
             </Text>
             <Text style={{ fontFamily: fonts.sans, fontSize: 13, color: t.textSoft }}>{greeting()}</Text>
           </View>
@@ -141,7 +147,10 @@ export default function Home() {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 130 }}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor={t.primary} />}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={() => {
+          refresh();
+          refreshBanners();
+        }} tintColor={t.primary} />}
       >
         {/* Sub-brand tabs */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 6, paddingTop: 4 }}>
@@ -154,10 +163,7 @@ export default function Home() {
                   style={{ width: 82, height: 54, borderRadius: 10, borderBottomLeftRadius: 0, borderBottomRightRadius: 0, backgroundColor: active ? t.card : t.cardStrong, borderWidth: 1, borderColor: t.border, alignItems: 'center', justifyContent: 'center' }}
                 >
                   {tb.key === 'rosier' ? (
-                    <View style={{ alignItems: 'center' }}>
-                      <Text style={{ fontFamily: fonts.serifBold, fontSize: 13, color: t.primary, letterSpacing: 1 }}>ROSIER</Text>
-                      <Text style={{ fontFamily: fonts.sans, fontSize: 6, color: t.textSoft, letterSpacing: 1 }}>NATURE'S LOVE</Text>
-                    </View>
+                    <RosierLogo width={70} color={t.mode === 'dark' ? '#E8C27A' : '#3E2415'} />
                   ) : tb.key === 'breakfast' ? (
                     <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: '#D6338A', textAlign: 'center', lineHeight: 13 }}>{tb.label}</Text>
                   ) : (
@@ -173,7 +179,10 @@ export default function Home() {
           <Carousel
             width={width}
             slides={[
-              <CoinsBanner key="c" width={width - 40} />,
+              <CoinsBanner key="c" width={width - 40} height={liveSlides.length ? Math.round((width - 40) / bannerAspect) : 212} />,
+              ...(liveSlides.length
+                ? liveSlides.map((b) => <LiveBannerSlide key={b.id} banner={b} width={width - 40} height={Math.round((width - 40) / bannerAspect)} />)
+                : [
               ghee && (
                 <ProductBanner
                   key="g"
@@ -208,9 +217,12 @@ export default function Home() {
                   onPress={() => router.push({ pathname: '/collection/[id]', params: { id: 'breakfast' } })}
                 />
               ),
+                  ]),
             ].filter(Boolean)}
           />
         </View>
+
+        <LiveTiles width={width} />
 
         {/* Categories */}
         <SectionHeader title="Discover category" style={{ marginTop: 22 }} />
@@ -313,8 +325,9 @@ export default function Home() {
         </View>
 
         <View style={{ alignItems: 'center', marginTop: 36, gap: 4 }}>
-          <Text style={{ fontFamily: fonts.serifBold, fontSize: 28, color: t.border, letterSpacing: 4 }}>ROSIER</Text>
-          <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: t.textMute }}>Made with love in Bharat 🇮🇳</Text>
+          <RosierLogo width={130} color={t.textMute} />
+          <Text style={{ fontFamily: fonts.serif, fontSize: 15, color: t.textSoft, marginTop: 4 }}>{TAGLINE}</Text>
+          <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: t.textMute }}>Made with love in Bharat 🇮🇳</Text>
         </View>
       </Animated.ScrollView>
     </View>

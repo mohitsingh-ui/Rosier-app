@@ -10,12 +10,14 @@ type AppState = {
   name: string;
   phone: string;
   email: string;
+  photo: string | null;
   themePref: ThemePref;
   menuOpen: boolean;
   notifications: { id: string; title: string; body: string; time: number; read: boolean }[];
   setOnboarded: (v: boolean) => void;
   setProfile: (p: Partial<Pick<AppState, 'name' | 'phone' | 'email'>>) => void;
   setThemePref: (t: ThemePref) => void;
+  setPhoto: (uri: string | null) => void;
   setMenuOpen: (v: boolean) => void;
   pushNotification: (title: string, body: string) => void;
   markAllRead: () => void;
@@ -27,9 +29,10 @@ export const useApp = create<AppState>()(
     (set) => ({
       hydrated: false,
       onboarded: false,
-      name: 'Ankur',
+      name: '',
       phone: '',
       email: '',
+      photo: null,
       themePref: 'light',
       menuOpen: false,
       notifications: [
@@ -44,6 +47,7 @@ export const useApp = create<AppState>()(
       setOnboarded: (v) => set({ onboarded: v }),
       setProfile: (p) => set(p),
       setThemePref: (t) => set({ themePref: t }),
+      setPhoto: (uri) => set({ photo: uri }),
       setMenuOpen: (v) => set({ menuOpen: v }),
       pushNotification: (title, body) =>
         set((s) => ({

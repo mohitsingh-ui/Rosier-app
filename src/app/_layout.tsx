@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { FlyHost } from '../components/FlyToCart';
 import { ToastHost } from '../components/Toast';
+import { useBanners } from '../data/banners';
 import { useCatalog } from '../data/catalog';
 import { useApp } from '../store/app';
 import { useCoins } from '../store/shop';
@@ -46,6 +47,7 @@ export default function RootLayout() {
     // Credit any coins whose waiting period is over, then fetch live prices.
     useCoins.getState().releasePending();
     useCatalog.getState().refresh();
+    useBanners.getState().refresh();
   }, []);
 
   if (!loaded || !hydrated) return <View style={{ flex: 1, backgroundColor: '#FBEBD8' }} />;

@@ -4,6 +4,7 @@ import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Pillars } from '../components/HomeExtras';
+import { RosierLogo, TAGLINE } from '../components/Logo';
 import { Button, ScreenHeader, Txt } from '../components/ui';
 import { openStorePage } from '../lib/cart';
 import { fonts, useTheme } from '../theme';
@@ -24,7 +25,11 @@ export default function About() {
       <ScreenHeader title="Our Story" />
       <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
         <LinearGradient colors={[t.header, t.bg]} style={{ padding: 20, paddingTop: 10 }}>
-          <Animated.Text entering={FadeInDown.springify()} style={{ fontFamily: fonts.serifBold, fontSize: 32, color: t.heading, lineHeight: 38 }}>
+          <Animated.View entering={FadeInDown.springify()} style={{ alignItems: 'center', marginBottom: 14 }}>
+            <RosierLogo width={150} color={t.mode === 'dark' ? '#E8C27A' : '#3E2415'} />
+            <Text style={{ fontFamily: fonts.serif, fontSize: 16, color: t.heading, marginTop: 4 }}>{TAGLINE}</Text>
+          </Animated.View>
+          <Animated.Text entering={FadeInDown.delay(80).springify()} style={{ fontFamily: fonts.serifBold, fontSize: 28, color: t.heading, lineHeight: 34 }}>
             We are reviving the traditional ways of Old Bharat
           </Animated.Text>
           <Para delay={100}>
